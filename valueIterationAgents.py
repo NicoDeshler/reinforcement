@@ -63,6 +63,23 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
+        # setup the value dictionary for
+        next_values = util.Counter()
+        states = self.mdp.getStates()
+
+        for i in range(self.iterations):
+            for s in states:
+
+                if self.mdp.isTerminal(s):
+                    continue
+
+                actions = self.mdp.getPossibleActions(s)
+                qvalues = [self.getQValue(s, a) for a in actions]
+                next_values[s] = max(qvalues)
+
+            self.values = next_values
+
+        return [self.getPolicy(s) for s in self.mdp.getStates()]
 
     def getValue(self, state):
         """
@@ -77,7 +94,9 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        tstates_and_probs = self.mdp.getTransitionStatesAndProbs(state, action)
+        q_sa = sum([tprob * (self.mdp.getReward(state, action, nextState) + self.discount * self.getValue(nextState)) for nextState, tprob in tstates_and_probs])
+        return q_sa
 
     def computeActionFromValues(self, state):
         """
@@ -89,7 +108,23 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if self.mdp.isTerminal(state):
+            return
+        actions = self.mdp.getPossibleActions(state)
+        qvals = [self.getQValue(state,a) for a in actions]
+        """
+        # tie break by first max
+        best_action_index = qvals.index(max(qvals))
+        return actions[best_action_index]   
+        """
+        # tie break by random choice
+        max_qval = max(qvals)
+        best_actions = []
+        for i in range(len(qvals)):
+            if qvals[i] == max_qval:
+                best_actions.append(actions[i])
+        return util.random.choice(best_actions)
+
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
