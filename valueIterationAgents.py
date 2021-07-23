@@ -210,3 +210,73 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
 
+        # helper function to get state predecessors
+        def getPredecessors(self,state):
+            # returns a set of predecessor states
+            preds = set()
+
+            # find predecessors of s
+            for s in self.mdp.getStates():
+
+                # predecessor can't be a terminal state
+                if self.mdp.isTerminal(s):
+                    continue
+
+                actions = self.mdp.getPossibleActions(s)
+
+                for a in actions:
+
+                    tstates_and_probs = self.mdp.getTransitionStatesAndProbs(s,a)
+
+                    for next_state, tprob in tstates_and_probs:
+
+                        if tprob > 0 and next_state == state:
+                            preds.add(s)
+
+            return preds
+
+        # helper function to get difference of value from true value
+        def getDiff(self,state):
+            actions = self.mdp.getPossibleActions(state)
+            diff  = abs(self.values[state] - max([self.getQValue(state,a) for a in actions]))
+            return diff
+
+        # collect predecessors of each state
+        states = self.mdp.getStates()
+        state_predecessors = dict()
+
+        for s in states:
+            state_predecessors[s] = getPredecessors(self,s)
+
+        # initialize a priority queue
+        queue = util.PriorityQueue()
+
+        # loop through states to populate queue
+        for s in states:
+
+            # skip terminal state updates
+            if self.mdp.isTerminal(s):
+                continue
+
+            # push state to queue with priority -diff
+            diff = getDiff(self,s)
+            queue.push(s,-diff)
+
+
+        # perform value iteration with queued sates
+        for i in range(self.iterations):
+            # terminate process if queue is empty
+            if queue.isEmpty():
+                return
+
+            # update value of state
+            s = queue.pop()
+            actions = self.mdp.getPossibleActions(s)
+            qvalues = [self.getQValue(s, a) for a in actions]
+            self.values[s] = max(qvalues)
+
+            for p in state_predecessors[s]:
+                diff = getDiff(self,p)
+                if diff > self.theta:
+                    queue.update(p,-diff)
+
