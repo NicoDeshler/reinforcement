@@ -63,13 +63,17 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
-        # setup the value dictionary for
-        next_values = util.Counter()
-        states = self.mdp.getStates()
-
+        # do value iteration
         for i in range(self.iterations):
+
+            # setup the value dictionary for updating
+            next_values = util.Counter()
+            states = self.mdp.getStates()
+
+            # update the value of each state
             for s in states:
 
+                # ignore state if is Terminal?
                 if self.mdp.isTerminal(s):
                     continue
 
@@ -78,8 +82,8 @@ class ValueIterationAgent(ValueEstimationAgent):
                 next_values[s] = max(qvalues)
 
             self.values = next_values
-
-        return [self.getPolicy(s) for s in self.mdp.getStates()]
+        return
+        #return [self.getPolicy(s) for s in self.mdp.getStates()]
 
     def getValue(self, state):
         """
